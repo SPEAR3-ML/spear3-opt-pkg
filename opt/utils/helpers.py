@@ -106,3 +106,31 @@ def make_evaluate_2d(evaluate):
         return Y
     
     return evaluate_2d
+
+def SE_kernel(sigma_f=1, theta=1):
+    def kernel(X, Xp):
+        assert X.shape[1] == Xp.shape[1], 'decision space dimensions must match'
+        
+        mat = np.sum((np.expand_dims(X, 1) - np.expand_dims(Xp, 0)) ** 2, axis=2)
+        
+        return sigma_f ** 2 * np.exp(-0.5 / theta ** 2 * mat)
+    
+    return kernel
+
+def hinv(M, lamb=0):
+    u, s, vh = np.linalg.svd(M)
+    invM = np.linalg.multi_dot([vh.T, np.diag(s / (s ** 2 + lamb ** 2)), u.T])
+    
+    return invM
+
+def hinv_auto(M, C):
+    u, s, vh = np.linalg.svd(M)
+    sm = np.min(s)
+    sM = np.max(s)
+    K = sM / sm  # condition number
+    lamb = 0
+    if K > C:
+        lamb = sm * np.sqrt(K / C - 1)
+    invM = np.linalg.multi_dot([vh.T, np.diag(s / (s ** 2 + lamb ** 2)), u.T])
+    
+    return invM
