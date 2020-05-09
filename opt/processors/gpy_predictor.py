@@ -4,10 +4,24 @@
 import numpy as np
 import GPy
 
-def model_gpy(X, Y, params=None):
-#     theta = params['theta']
-#     sigma_f = np.sqrt(params['var'])
-#     sigma_n = params['sigma_n']
+def model(X, Y, params=None):
+    theta = None
+    sigma_f = None
+    sigma_n = None
+    try:
+        theta = params['theta']
+    except KeyError:
+        pass
+    try:
+        sigma_f = np.sqrt(params['var'])
+    except KeyError:
+        pass
+    except TypeError:
+        sigma_f = np.std(Y, axis=0).reshape(1, -1)
+    try:
+        sigma_n = params['sigma_n']
+    except KeyError:
+        pass
     
     D = X.shape[1]
     model_list = []
@@ -15,11 +29,25 @@ def model_gpy(X, Y, params=None):
         kernel = GPy.kern.RBF(D)
         model = GPy.models.GPRegression(X, Y[:, i:i+1], kernel)
         
-#         model.rbf.variance = sigma_f[0, i] ** 2
-#         model.rbf.lengthscale = theta[0, 0]
-#         model.Gaussian_noise.variance = sigma_n[0, 0] ** 2
-        model['.*lengthscale'].constrain_bounded(0.1, 10)
-        model.optimize_restarts(num_restarts=20, verbose=False, parallel=True)
+        need_optimize = False
+        try:
+            model.rbf.variance = sigma_f[0, i] ** 2
+            model.rbf.variance.fix()
+        except:
+            need_optimize = True
+        try:
+            model.rbf.lengthscale = theta[0, 0]
+            model.rbf.lengthscale.fix()
+        except:
+            model['.*lengthscale'].constrain_bounded(0.1, 10)
+            need_optimize = True
+        try:
+            model.Gaussian_noise.variance = sigma_n[0, 0] ** 2
+            model.Gaussian_noise.variance.fix()
+        except:
+            need_optimize = True
+        if need_optimize:
+            model.optimize_restarts(num_restarts=20, verbose=False, parallel=True)
 #         print(f'sigma_f: {np.sqrt(model.rbf.variance)}, theta: {model.rbf.lengthscale}, sigma_n: {np.sqrt(model.Gaussian_noise.variance)}')
         
         model_list.append(model)
@@ -39,7 +67,7 @@ def model_gpy(X, Y, params=None):
         return mu, sigma
     return predict
 
-def process(X):
+def process(X, params=None):
     X0 = np.array(X[0][0])
     Y0 = np.array(X[0][1])
     X1 = np.array(X[1])
@@ -47,7 +75,7 @@ def process(X):
     Y0_mean = np.mean(Y0, axis=0)
     _Y0 = Y0 - Y0_mean
     
-    predict = model_gpy(X0, _Y0)
+    predict = model(X0, _Y0, params)
     _Y1_mu, Y1_sigma = predict(X1)
     Y1_mu = _Y1_mu + Y0_mean
     
