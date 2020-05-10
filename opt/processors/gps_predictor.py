@@ -68,7 +68,10 @@ def model(X, Y, params=None):
             
             Kss = kernel(Xs, Xs)
             cov = Kss - np.linalg.multi_dot([Ks, invA, Ks.T])
-            sigma = np.sqrt(cov.diagonal().reshape(-1, 1))
+            diag = cov.diagonal().copy()
+            # print(diag.min())
+            diag[diag < 0] = 0
+            sigma = np.sqrt(diag.reshape(-1, 1))
             sigma_list.append(sigma)
         
         mu = np.hstack(mu_list)
