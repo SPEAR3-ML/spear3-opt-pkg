@@ -46,7 +46,7 @@ def model(X, Y, params=None):
             A = K + sigma_n[0, 0] ** 2 * np.eye(K.shape[0])
             kernel_list.append(kernel)
             A_list.append(A)
-            if C is None:
+            if lamb is None:
                 invA = hinv_auto(A, C)
             else:
                 invA = hinv(A, lamb)
