@@ -46,7 +46,7 @@ def model(X, Y, params=None):
             A = K + sigma_n[0, 0] ** 2 * np.eye(K.shape[0])
             kernel_list.append(kernel)
             A_list.append(A)
-            if C is None:
+            if lamb is None:
                 invA = hinv_auto(A, C)
             else:
                 invA = hinv(A, lamb)
@@ -68,7 +68,10 @@ def model(X, Y, params=None):
             
             Kss = kernel(Xs, Xs)
             cov = Kss - np.linalg.multi_dot([Ks, invA, Ks.T])
-            sigma = np.sqrt(cov.diagonal().reshape(-1, 1))
+            diag = cov.diagonal().copy()
+            # print(diag.min())
+            diag[diag < 0] = 0
+            sigma = np.sqrt(diag.reshape(-1, 1))
             sigma_list.append(sigma)
         
         mu = np.hstack(mu_list)
