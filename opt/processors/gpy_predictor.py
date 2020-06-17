@@ -8,6 +8,7 @@ def model(X, Y, params=None):
     theta = None
     sigma_f = None
     sigma_n = None
+    ret_grad = False
     try:
         theta = params['theta']
     except KeyError:
@@ -20,6 +21,10 @@ def model(X, Y, params=None):
         sigma_f = np.std(Y, axis=0).reshape(1, -1)
     try:
         sigma_n = params['sigma_n']
+    except KeyError:
+        pass
+    try:
+        ret_grad = params['ret_grad']
     except KeyError:
         pass
     
@@ -55,16 +60,30 @@ def model(X, Y, params=None):
     def predict(Xs):
         mu_list = []
         sigma_list = []
+        if ret_grad:
+            grad_mu_list = []
+            grad_sigma_list = []
+            
         for i in range(Y.shape[1]):
             model = model_list[i]
-            
             mu, var = model.predict(Xs)
             mu_list.append(mu)
             sigma_list.append(np.sqrt(var))
+            if ret_grad:
+                grad_mu, grad_var = model.predictive_gradients(Xs)
+                grad_mu = grad_mu[:, :, 0]
+                grad_sigma = grad_var / 2 / sigma_list[-1]
+                grad_mu_list.append(grad_mu)
+                grad_sigma_list.append(grad_sigma)
         
         mu = np.hstack(mu_list)
         sigma = np.hstack(sigma_list)
-        return mu, sigma
+        grad_mu = None
+        grad_sigma = None
+        if ret_grad:
+            grad_mu = np.hstack(grad_mu_list)
+            grad_sigma = np.hstack(grad_sigma_list)
+        return mu, sigma, grad_mu, grad_sigma
     return predict
 
 def process(X, params=None):
@@ -76,8 +95,11 @@ def process(X, params=None):
     _Y0 = Y0 - Y0_mean
     
     predict = model(X0, _Y0, params)
-    _Y1_mu, Y1_sigma = predict(X1)
+    _Y1_mu, Y1_sigma, Y1_mu_grad, Y1_sigma_grad = predict(X1)
     Y1_mu = _Y1_mu + Y0_mean
     
-    P = [Y1_mu.tolist(), Y1_sigma.tolist()]
+    if Y1_mu_grad is None:
+        P = [Y1_mu.tolist(), Y1_sigma.tolist()]
+    else:
+        P = [Y1_mu.tolist(), Y1_sigma.tolist(), Y1_mu_grad.tolist(), Y1_sigma_grad.tolist()]
     return P
