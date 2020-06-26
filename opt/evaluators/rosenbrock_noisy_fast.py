@@ -19,7 +19,7 @@ def evaluator_generator(vrange=(0, 1), noise_level=0):
 
         # Rosenbrock
         Y = np.sum(100 * (X[:, 1:] - X[:, :-1] ** 2) ** 2 + \
-                   (1 - X[:, :-1]) ** 2, axis=1).reshape(-1, 1)
+                   (1 - X[:, :-1]) ** 2, axis=1).reshape(-1, 1).astype('float64')
         # add noise
         Y += noise_level * np.random.randn(*Y.shape)
 
