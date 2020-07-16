@@ -21,7 +21,8 @@ setup(
         'pygmo',
         'smt',
         'pyDOE',
-        'fabric'
+        'fabric',
+        'pymoo'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
