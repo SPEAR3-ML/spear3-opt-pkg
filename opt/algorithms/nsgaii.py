@@ -26,12 +26,12 @@ class Evaluator(Problem):
         out["F"] = Y
 #         out["F"] = anp.column_stack([f1, f2])
 
-async def optimize(evaluate, params):
+async def optimize(evaluate, configs):
     # config
     # D = 8  decision space dimension
     # N0 = 100  initial population
     # Ng = 100  total generation
-    D, Ng, N0 = itemgetter('D', 'Ng', 'N0')(params)
+    D, Ng, N0 = itemgetter('D', 'Ng', 'N0')(configs)
     
     problem = Evaluator(evaluate, D)
     algorithm = NSGA2(
