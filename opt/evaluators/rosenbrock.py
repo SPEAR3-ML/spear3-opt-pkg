@@ -4,33 +4,25 @@
 import asyncio
 import numpy as np
 import pandas as pd
-import datetime as dt
+import time
+from ..utils.helpers import make_async
 
-def evaluator_generator(vrange=(0, 1), wall_time=1):
-    async def evaluate(X, hook=None):
-        assert type(X) == np.ndarray, 'Input X must be a numpy array'
+from operator import itemgetter
 
-        # denormalize the parameters
-        X = vrange[0] + (vrange[1] - vrange[0]) * X
+async def evaluate(X, configs={
+        'vrange': [0, 1],
+        'wall_time': 1
+    }):
+    assert type(X) == np.ndarray, 'Input X must be a numpy array'
 
-        # Rosenbrock
-        Y = np.sum(100 * (X[:, 1:] - X[:, :-1] ** 2) ** 2 + \
-                   (1 - X[:, :-1]) ** 2, axis=1).reshape(-1, 1)
-
-        if hook:
-            for i, y in enumerate(Y):
-                await asyncio.sleep(wall_time)
-                finished_time = dt.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-                # it's very strange that if the obj is negative, the bokeh
-                # plot will not update. however if use obj[0] instead of obj
-                # when update the plot, the plot will update...
-                # will try to figure this out when have more time
-                # if i % 2:
-                #     hook(X[i], -y, finished_time)
-                # else:
-                #     hook(X[i], y, finished_time)
-                hook(X[i], y, finished_time)
-
-        return Y
+    vrange, wall_time = itemgetter('vrange', 'wall_time')(configs)
     
-    return evaluate
+    await asyncio.sleep(wall_time)
+    # denormalize the parameters
+    X1 = vrange[0] + (vrange[1] - vrange[0]) * X
+
+    # Rosenbrock
+    Y = np.sum(100 * (X1[:, 1:] - X1[:, :-1] ** 2) ** 2 + \
+               (1 - X1[:, :-1]) ** 2, axis=1).reshape(-1, 1)
+    
+    return Y
