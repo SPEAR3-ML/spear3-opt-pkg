@@ -26,13 +26,12 @@ class evaluate_wrapper:
     def get_extra_info(self):
         return f'\tDimensions: {self.D}'
 
-async def optimize(evaluate, params, hooks):
+async def optimize(evaluate, configs):
     # config
     # D = 8  decision space dimension
     # N0 = 100  initial population
     # Ng = 100  total generation
-    D, Ng, N0 = itemgetter('D', 'Ng', 'N0')(params)
-    hook_report = itemgetter('report')(hooks)
+    D, Ng, N0 = itemgetter('D', 'Ng', 'N0')(configs)
     
     algo = pg.algorithm(pg.pso(gen=Ng))
     algo.set_verbosity(int(Ng / 10))
@@ -42,9 +41,6 @@ async def optimize(evaluate, params, hooks):
     await asyncio.sleep(0)
     pop = algo.evolve(pop)
     gbest = (pop.champion_x, pop.champion_f)
-    
-    if hook_report:
-        hook_report(gbest)
     
     return gbest
 
