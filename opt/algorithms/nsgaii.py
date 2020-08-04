@@ -31,7 +31,8 @@ async def optimize(evaluate, configs):
     # D = 8  decision space dimension
     # N0 = 100  initial population
     # Ng = 100  total generation
-    D, Ng, N0 = itemgetter('D', 'Ng', 'N0')(configs)
+    # seed = None  random seed
+    D, Ng, N0, seed = itemgetter('D', 'Ng', 'N0', 'seed')(configs)
     
     problem = Evaluator(evaluate, D)
     algorithm = NSGA2(
@@ -47,7 +48,7 @@ async def optimize(evaluate, configs):
     res = minimize(problem,
                    algorithm,
                    termination,
-                   seed=1,
+                   seed=seed,
                    save_history=True,
                    verbose=False)
     gbest = (res.X, res.F)
