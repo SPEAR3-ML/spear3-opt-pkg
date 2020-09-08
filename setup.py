@@ -22,7 +22,8 @@ setup(
         'smt',
         'pyDOE',
         'fabric',
-        'pymoo'
+        'pymoo',
+        'autograd'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
