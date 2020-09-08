@@ -4,27 +4,27 @@
 import numpy as np
 import GPy
 
-def model(X, Y, params=None):
+def model(X, Y, configs=None):
     theta = None
     sigma_f = None
     sigma_n = None
     ret_grad = False
     try:
-        theta = params['theta']
+        theta = configs['theta']
     except KeyError:
         pass
     try:
-        sigma_f = np.sqrt(params['var'])
+        sigma_f = np.sqrt(configs['var'])
     except KeyError:
         pass
     except TypeError:
         sigma_f = np.std(Y, axis=0).reshape(1, -1)
     try:
-        sigma_n = params['sigma_n']
+        sigma_n = configs['sigma_n']
     except KeyError:
         pass
     try:
-        ret_grad = params['ret_grad']
+        ret_grad = configs['ret_grad']
     except KeyError:
         pass
     
@@ -86,7 +86,7 @@ def model(X, Y, params=None):
         return mu, sigma, grad_mu, grad_sigma
     return predict
 
-def process(X, params=None):
+def process(X, configs=None):
     X0 = np.array(X[0][0])
     Y0 = np.array(X[0][1])
     X1 = np.array(X[1])
@@ -94,7 +94,7 @@ def process(X, params=None):
     Y0_mean = np.mean(Y0, axis=0)
     _Y0 = Y0 - Y0_mean
     
-    predict = model(X0, _Y0, params)
+    predict = model(X0, _Y0, configs)
     _Y1_mu, Y1_sigma, Y1_mu_grad, Y1_sigma_grad = predict(X1)
     Y1_mu = _Y1_mu + Y0_mean
     
