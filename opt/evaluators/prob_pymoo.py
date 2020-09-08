@@ -6,6 +6,8 @@ import numpy as np
 import time
 from pymoo.factory import get_problem
 
+from operator import itemgetter
+
 async def evaluate(X, configs={
         'prob_id': 'zdt1',
         'vrange': [0, 1],
