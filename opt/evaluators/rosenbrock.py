@@ -11,7 +11,8 @@ from operator import itemgetter
 
 async def evaluate(X, configs={
         'vrange': [0, 1],
-        'wall_time': 1
+        'wall_time': 1,
+        'noise_level': 0
     }):
     assert type(X) == np.ndarray, 'Input X must be a numpy array'
 
@@ -23,6 +24,9 @@ async def evaluate(X, configs={
 
     # Rosenbrock
     Y = np.sum(100 * (X1[:, 1:] - X1[:, :-1] ** 2) ** 2 + \
-               (1 - X1[:, :-1]) ** 2, axis=1).reshape(-1, 1)
+               (1 - X1[:, :-1]) ** 2, axis=1).reshape(-1, 1).astype('float64')
+
+    # add noise
+    Y += noise_level * np.random.randn(*Y.shape)
     
     return Y
