@@ -16,7 +16,7 @@ async def evaluate(X, configs={
     }):
     assert type(X) == np.ndarray, 'Input X must be a numpy array'
 
-    vrange, wall_time = itemgetter('vrange', 'wall_time')(configs)
+    vrange, wall_time, noise_level = itemgetter('vrange', 'wall_time', 'noise_level')(configs)
     
     await asyncio.sleep(wall_time)
     # denormalize the parameters
