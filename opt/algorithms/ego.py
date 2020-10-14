@@ -20,6 +20,9 @@ async def optimize(evaluate, configs):
     # criterion = 'UCB'  SBO|UCB|EI, acquisition to use
     # T = 300  maximum evaluation number
     evaluate = make_sync(evaluate)
+    def evaluate_so(X):  # make the evaluate function a real single objective function
+        _Y = evaluate(X)
+        return _Y[:, 0]
     
     # initialize
     D, N0, method, vrange, add_center, criterion, T = \
@@ -34,7 +37,7 @@ async def optimize(evaluate, configs):
 
     # run
     x_opt, y_opt, ind_best, x_data, y_data, x_doe, y_doe = ego.optimize(
-        fun=evaluate
+        fun=evaluate_so
     )
     
     return x_opt, y_opt
