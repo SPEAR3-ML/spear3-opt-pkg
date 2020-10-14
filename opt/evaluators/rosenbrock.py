@@ -12,21 +12,25 @@ from operator import itemgetter
 async def evaluate(X, configs={
         'vrange': [0, 1],
         'wall_time': 1,
-        'noise_level': 0
+        'noise_level': 0,
+        'ret_origin': False
     }):
     assert type(X) == np.ndarray, 'Input X must be a numpy array'
 
-    vrange, wall_time, noise_level = itemgetter('vrange', 'wall_time', 'noise_level')(configs)
+    vrange, wall_time, noise_level, ret_origin = itemgetter('vrange', 'wall_time', 'noise_level', 'ret_origin')(configs)
     
     await asyncio.sleep(wall_time)
     # denormalize the parameters
     X1 = vrange[0] + (vrange[1] - vrange[0]) * X
 
     # Rosenbrock
-    Y = np.sum(100 * (X1[:, 1:] - X1[:, :-1] ** 2) ** 2 + \
-               (1 - X1[:, :-1]) ** 2, axis=1).reshape(-1, 1).astype('float64')
+    _Y = np.sum(100 * (X1[:, 1:] - X1[:, :-1] ** 2) ** 2 + \
+        (1 - X1[:, :-1]) ** 2, axis=1).reshape(-1, 1).astype('float64')
 
     # add noise
-    Y += noise_level * np.random.randn(*Y.shape)
+    Y = _Y + noise_level * np.random.randn(*_Y.shape)
     
-    return Y
+    if ret_origin:
+        return np.hstack((Y, _Y))
+    else:
+        return Y
