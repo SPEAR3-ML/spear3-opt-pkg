@@ -67,6 +67,7 @@ def model(X, Y, configs=None):
         for i in range(Y.shape[1]):
             model = model_list[i]
             mu, var = model.predict(Xs)
+            var[var < 0] = 0  # remove the negative jitter
             mu_list.append(mu)
             sigma_list.append(np.sqrt(var))
             if ret_grad:
